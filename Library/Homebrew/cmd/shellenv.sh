@@ -15,7 +15,9 @@ homebrew-shellenv() {
   then
     HOMEBREW_SHELL_NAME="$1"
   else
-    HOMEBREW_SHELL_NAME="$(/bin/ps -p "${PPID}" -c -o comm=)"
+    # Prefer lsof to ps to get the command for the parent process. Because lsof
+    # is not setuid, it can be run under Seatbelt without a special exemption.
+    HOMEBREW_SHELL_NAME="$(/usr/sbin/lsof -p "${PPID}" -a -d cwd -Fc | /usr/bin/sed -n "s/^c//p")"
   fi
 
   if [[ -n "${HOMEBREW_MACOS}" ]] &&
